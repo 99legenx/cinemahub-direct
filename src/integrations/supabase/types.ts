@@ -14,7 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      movie_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          movie_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          movie_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          movie_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movie_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movie_categories_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movies: {
+        Row: {
+          created_at: string
+          description: string | null
+          director: string | null
+          download_url: string | null
+          duration: number | null
+          featured: boolean | null
+          genre: string
+          id: string
+          latest: boolean | null
+          movie_cast: string[] | null
+          popular: boolean | null
+          poster_url: string | null
+          rating: number | null
+          release_year: number | null
+          title: string
+          trailer_url: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          director?: string | null
+          download_url?: string | null
+          duration?: number | null
+          featured?: boolean | null
+          genre: string
+          id?: string
+          latest?: boolean | null
+          movie_cast?: string[] | null
+          popular?: boolean | null
+          poster_url?: string | null
+          rating?: number | null
+          release_year?: number | null
+          title: string
+          trailer_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          director?: string | null
+          download_url?: string | null
+          duration?: number | null
+          featured?: boolean | null
+          genre?: string
+          id?: string
+          latest?: boolean | null
+          movie_cast?: string[] | null
+          popular?: boolean | null
+          poster_url?: string | null
+          rating?: number | null
+          release_year?: number | null
+          title?: string
+          trailer_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
