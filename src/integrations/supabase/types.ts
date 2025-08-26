@@ -14,39 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      analytics: {
-        Row: {
-          action: string
-          created_at: string
-          id: string
-          ip_address: unknown | null
-          metadata: Json | null
-          movie_id: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string
-          id?: string
-          ip_address?: unknown | null
-          metadata?: Json | null
-          movie_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string
-          id?: string
-          ip_address?: unknown | null
-          metadata?: Json | null
-          movie_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       categories: {
         Row: {
           created_at: string
@@ -68,39 +35,6 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
-        }
-        Relationships: []
-      }
-      content_approvals: {
-        Row: {
-          id: string
-          movie_id: string
-          review_notes: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          submitted_at: string
-          submitted_by: string
-        }
-        Insert: {
-          id?: string
-          movie_id: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          submitted_at?: string
-          submitted_by: string
-        }
-        Update: {
-          id?: string
-          movie_id?: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          submitted_at?: string
-          submitted_by?: string
         }
         Relationships: []
       }
@@ -142,8 +76,6 @@ export type Database = {
       }
       movies: {
         Row: {
-          approved_at: string | null
-          approved_by: string | null
           created_at: string
           description: string | null
           director: string | null
@@ -158,15 +90,12 @@ export type Database = {
           poster_url: string | null
           rating: number | null
           release_year: number | null
-          status: string | null
           title: string
           trailer_url: string | null
           updated_at: string
           video_url: string | null
         }
         Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
           created_at?: string
           description?: string | null
           director?: string | null
@@ -181,15 +110,12 @@ export type Database = {
           poster_url?: string | null
           rating?: number | null
           release_year?: number | null
-          status?: string | null
           title: string
           trailer_url?: string | null
           updated_at?: string
           video_url?: string | null
         }
         Update: {
-          approved_at?: string | null
-          approved_by?: string | null
           created_at?: string
           description?: string | null
           director?: string | null
@@ -204,98 +130,10 @@ export type Database = {
           poster_url?: string | null
           rating?: number | null
           release_year?: number | null
-          status?: string | null
           title?: string
           trailer_url?: string | null
           updated_at?: string
           video_url?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          email: string | null
-          full_name: string | null
-          id: string
-          phone: string | null
-          two_factor_enabled: boolean | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          phone?: string | null
-          two_factor_enabled?: boolean | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          phone?: string | null
-          two_factor_enabled?: boolean | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_otp: {
-        Row: {
-          code: string
-          created_at: string
-          expires_at: string
-          id: string
-          type: string
-          used: boolean | null
-          user_id: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          expires_at?: string
-          id?: string
-          type: string
-          used?: boolean | null
-          user_id: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          expires_at?: string
-          id?: string
-          type?: string
-          used?: boolean | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
         }
         Relationships: []
       }
@@ -304,16 +142,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -440,8 +272,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "moderator", "user"],
-    },
+    Enums: {},
   },
 } as const
