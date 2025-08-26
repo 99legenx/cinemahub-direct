@@ -87,6 +87,7 @@ export function useAuth() {
 
   const fetchUserRoles = async (userId: string) => {
     try {
+      console.log('Fetching roles for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
@@ -97,6 +98,7 @@ export function useAuth() {
         return;
       }
 
+      console.log('User roles fetched:', data);
       setUserRoles(data || []);
     } catch (error) {
       console.error('Error fetching user roles:', error);
@@ -104,7 +106,9 @@ export function useAuth() {
   };
 
   const hasRole = (role: 'admin' | 'moderator' | 'user'): boolean => {
-    return userRoles.some(userRole => userRole.role === role);
+    const result = userRoles.some(userRole => userRole.role === role);
+    console.log(`Checking role ${role}:`, result, 'User roles:', userRoles);
+    return result;
   };
 
   const isAdmin = (): boolean => hasRole('admin');

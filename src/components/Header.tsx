@@ -18,6 +18,9 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, profile, isAdmin, isModerator, signOut } = useAuth();
 
+  // Debug admin status
+  console.log('Header - User:', user?.email, 'isAdmin:', isAdmin(), 'isModerator:', isModerator());
+
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
