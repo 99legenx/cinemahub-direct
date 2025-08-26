@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+console.log('AdminDashboard component imported and loading...');
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ interface ContentApproval {
 }
 
 export default function AdminDashboard() {
+  console.log('AdminDashboard component rendering...');
   const { user, isAdmin, isModerator, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [movies, setMovies] = useState<Movie[]>([]);

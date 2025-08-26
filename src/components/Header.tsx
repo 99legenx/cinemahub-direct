@@ -71,7 +71,10 @@ const Header = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    onClick={() => navigate('/admin')}
+                    onClick={() => {
+                      console.log('Admin button clicked, navigating to /admin');
+                      navigate('/admin');
+                    }}
                     className="hidden sm:flex text-primary hover:text-primary/80"
                   >
                     <Shield className="w-4 h-4 mr-2" />
@@ -96,7 +99,10 @@ const Header = () => {
                     {!loading && (isAdmin() || isModerator()) && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <DropdownMenuItem onClick={() => {
+                          console.log('Admin dropdown clicked, navigating to /admin');
+                          navigate('/admin');
+                        }}>
                           <Shield className="w-4 h-4 mr-2" />
                           Admin Dashboard
                         </DropdownMenuItem>
