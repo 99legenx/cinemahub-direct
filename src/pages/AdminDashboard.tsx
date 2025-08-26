@@ -77,8 +77,9 @@ export default function AdminDashboard() {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Simple access check
-  const hasAccess = user && (isAdmin() || isModerator());
+  // Simpler access check - check roles directly
+  const userRoles = user ? (user as any).app_metadata?.roles || [] : [];
+  const hasAccess = user && (userRoles.includes('admin') || userRoles.includes('moderator') || isAdmin() || isModerator());
 
   console.log('AdminDashboard - User:', user?.email, 'hasAccess:', hasAccess, 'authLoading:', authLoading);
 
