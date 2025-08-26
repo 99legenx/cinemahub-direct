@@ -27,6 +27,7 @@ export function useAuth() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,13 +44,19 @@ export function useAuth() {
           // Defer data fetching to prevent deadlocks
           setTimeout(() => {
             if (isMounted) {
-              fetchUserProfile(session.user.id);
-              fetchUserRoles(session.user.id);
+              setRolesLoading(true);
+              Promise.all([
+                fetchUserProfile(session.user.id),
+                fetchUserRoles(session.user.id)
+              ]).finally(() => {
+                setRolesLoading(false);
+              });
             }
           }, 0);
         } else {
           setProfile(null);
           setUserRoles([]);
+          setRolesLoading(false);
         }
         setLoading(false);
       }
@@ -65,8 +72,13 @@ export function useAuth() {
       if (session?.user) {
         setTimeout(() => {
           if (isMounted) {
-            fetchUserProfile(session.user.id);
-            fetchUserRoles(session.user.id);
+            setRolesLoading(true);
+            Promise.all([
+              fetchUserProfile(session.user.id),
+              fetchUserRoles(session.user.id)
+            ]).finally(() => {
+              setRolesLoading(false);
+            });
           }
         }, 0);
       }
@@ -151,7 +163,7 @@ export function useAuth() {
     session,
     profile,
     userRoles,
-    loading,
+    loading: loading || rolesLoading,
     hasRole,
     isAdmin,
     isModerator,

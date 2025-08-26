@@ -16,10 +16,10 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
-  const { user, profile, isAdmin, isModerator, signOut } = useAuth();
+  const { user, profile, isAdmin, isModerator, signOut, loading } = useAuth();
 
   // Debug admin status
-  console.log('Header - User:', user?.email, 'isAdmin:', isAdmin(), 'isModerator:', isModerator());
+  console.log('Header - User:', user?.email, 'isAdmin:', isAdmin(), 'isModerator:', isModerator(), 'loading:', loading);
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -67,7 +67,7 @@ const Header = () => {
             {/* User Account */}
             {user ? (
               <div className="flex items-center space-x-2">
-                {(isAdmin() || isModerator()) && (
+                {!loading && (isAdmin() || isModerator()) && (
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -93,7 +93,7 @@ const Header = () => {
                       <User className="w-4 h-4 mr-2" />
                       Profile
                     </DropdownMenuItem>
-                    {(isAdmin() || isModerator()) && (
+                    {!loading && (isAdmin() || isModerator()) && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate('/admin')}>
@@ -152,7 +152,7 @@ const Header = () => {
             <Link to="/browse" className="block text-muted-foreground hover:text-cinema-gold transition-colors">
               Browse Movies
             </Link>
-            {user && (isAdmin() || isModerator()) && (
+            {user && !loading && (isAdmin() || isModerator()) && (
               <Link to="/admin" className="block text-primary hover:text-primary/80 transition-colors">
                 Admin Dashboard
               </Link>
