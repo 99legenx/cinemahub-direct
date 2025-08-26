@@ -18,8 +18,13 @@ import {
   Eye,
   Download,
   Play,
-  Search
+  Search,
+  Edit2,
+  Trash2
 } from "lucide-react";
+import MovieUploadForm from "@/components/MovieUploadForm";
+import MovieEditDialog from "@/components/MovieEditDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Movie {
   id: string;
@@ -164,6 +169,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteMovie = async (movieId: string) => {
+    try {
+      // Delete from content_approvals first (if exists)
+      await supabase
+        .from('content_approvals')
+        .delete()
+        .eq('movie_id', movieId);
+
+      // Delete the movie
+      const { error } = await supabase
+        .from('movies')
+        .delete()
+        .eq('id', movieId);
+
+      if (error) throw error;
+
+      toast.success("Movie deleted successfully");
+      fetchDashboardData();
+    } catch (error: any) {
+      toast.error("Failed to delete movie: " + error.message);
+    }
+  };
+
   const getAnalyticsStats = () => {
     const totalViews = analytics.filter(a => a.action === 'view').length;
     const totalDownloads = analytics.filter(a => a.action === 'download').length;
@@ -287,6 +315,34 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="flex space-x-2">
+                        <MovieEditDialog movie={movie} onSuccess={fetchDashboardData} />
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Movie</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{movie.title}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => deleteMovie(movie.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete Movie
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                         {movie.status === 'pending' && (
                           <>
                             <Button
@@ -298,7 +354,7 @@ export default function AdminDashboard() {
                             </Button>
                             <Button
                               size="sm"
-                              variant="destructive"
+                              variant="outline"
                               onClick={() => updateMovieStatus(movie.id, 'rejected')}
                             >
                               <X className="w-4 h-4 mr-1" />
@@ -418,27 +474,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload New Movie</CardTitle>
-                <CardDescription>
-                  Add new movies to the platform
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Upload className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Movie Upload Feature</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Advanced movie upload functionality with file management, metadata extraction, and secure storage.
-                  </p>
-                  <Button onClick={() => toast.info("Movie upload feature coming soon!")}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Movie
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <MovieUploadForm onSuccess={fetchDashboardData} />
           </TabsContent>
         </Tabs>
       </div>
