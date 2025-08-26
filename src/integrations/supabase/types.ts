@@ -261,7 +261,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
-          expires_at: string
+          expires_at?: string
           id?: string
           type: string
           used?: boolean | null

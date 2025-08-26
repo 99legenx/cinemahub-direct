@@ -1,13 +1,22 @@
 import { useState } from "react";
-import { Search, Menu, X, Play, Download } from "lucide-react";
+import { Search, Menu, X, Play, Download, User, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
+  const { user, profile, isAdmin, isModerator, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -52,6 +61,64 @@ const Header = () => {
               {showSearch ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </Button>
 
+            {/* User Account */}
+            {user ? (
+              <div className="flex items-center space-x-2">
+                {(isAdmin() || isModerator()) && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => navigate('/admin')}
+                    className="hidden sm:flex text-primary hover:text-primary/80"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                      <User className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">
+                        {profile?.full_name || user.email?.split('@')[0] || 'Account'}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    {(isAdmin() || isModerator()) && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/admin')}>
+                          <Shield className="w-4 h-4 mr-2" />
+                          Admin Dashboard
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/auth')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <User className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            )}
+
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
@@ -82,6 +149,16 @@ const Header = () => {
             <Link to="/browse" className="block text-muted-foreground hover:text-cinema-gold transition-colors">
               Browse Movies
             </Link>
+            {user && (isAdmin() || isModerator()) && (
+              <Link to="/admin" className="block text-primary hover:text-primary/80 transition-colors">
+                Admin Dashboard
+              </Link>
+            )}
+            {!user && (
+              <Link to="/auth" className="block text-muted-foreground hover:text-cinema-gold transition-colors">
+                Sign In
+              </Link>
+            )}
           </nav>
         </div>
       )}

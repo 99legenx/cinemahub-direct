@@ -5,20 +5,29 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMovie, useMoviesByGenre } from "@/hooks/useMovies";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import Header from "@/components/Header";
 import MovieCard from "@/components/MovieCard";
 import VideoPlayer from "@/components/VideoPlayer";
 import DownloadOptions from "@/components/DownloadOptions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { trackMovieView } = useAnalytics();
   const [showPlayer, setShowPlayer] = useState(false);
   const [showDownloads, setShowDownloads] = useState(false);
 
   const { data: movie, isLoading, error } = useMovie(id || "");
   const { data: relatedMovies = [] } = useMoviesByGenre(movie?.genre || "");
+
+  // Track movie view when component mounts
+  useEffect(() => {
+    if (movie && id) {
+      trackMovieView(id);
+    }
+  }, [movie, id, trackMovieView]);
 
   if (isLoading) {
     return (

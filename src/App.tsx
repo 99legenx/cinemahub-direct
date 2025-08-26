@@ -7,7 +7,10 @@ import Index from "./pages/Index";
 import MovieDetails from "./pages/MovieDetails";
 import SearchResults from "./pages/SearchResults";
 import BrowseMovies from "./pages/BrowseMovies";
+import AuthPage from "./pages/AuthPage";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -19,9 +22,39 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/movie/:id" element={<MovieDetails />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/browse" element={<BrowseMovies />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route 
+            path="/movie/:id" 
+            element={
+              <ProtectedRoute>
+                <MovieDetails />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/search" 
+            element={
+              <ProtectedRoute>
+                <SearchResults />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/browse" 
+            element={
+              <ProtectedRoute>
+                <BrowseMovies />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
