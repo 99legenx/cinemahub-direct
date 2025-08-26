@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -20,11 +21,11 @@ import {
   Play,
   Search,
   Edit2,
-  Trash2
+  Trash2,
+  Loader2
 } from "lucide-react";
 import MovieUploadForm from "@/components/MovieUploadForm";
 import MovieEditDialog from "@/components/MovieEditDialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Movie {
   id: string;
@@ -34,6 +35,13 @@ interface Movie {
   status: string;
   created_at: string;
   poster_url?: string;
+  director?: string;
+  movie_cast?: string[];
+  release_year?: number;
+  duration?: number;
+  trailer_url?: string;
+  video_url?: string;
+  download_url?: string;
 }
 
 interface AnalyticsData {
@@ -61,35 +69,62 @@ interface ContentApproval {
 }
 
 export default function AdminDashboard() {
-  const { user, isAdmin, isModerator, loading } = useAuth();
+  const { user, isAdmin, isModerator, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData[]>([]);
   const [approvals, setApprovals] = useState<ContentApproval[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Simple access check
+  const hasAccess = user && (isAdmin() || isModerator());
+
+  console.log('AdminDashboard - User:', user?.email, 'hasAccess:', hasAccess, 'authLoading:', authLoading);
 
   useEffect(() => {
-    if (!loading && (!user || (!isAdmin() && !isModerator()))) {
+    // Wait for auth to load completely
+    if (authLoading) return;
+
+    // Check access and redirect if necessary
+    if (!user) {
+      console.log('No user, redirecting to auth');
       navigate("/auth");
+      toast.error("Please sign in to access the admin dashboard.");
+      return;
+    }
+
+    if (!hasAccess) {
+      console.log('No admin access, redirecting to home');
+      navigate("/");
       toast.error("Access denied. Admin privileges required.");
       return;
     }
 
-    if (user && (isAdmin() || isModerator())) {
+    // If we have access, fetch data
+    if (hasAccess) {
       fetchDashboardData();
     }
-  }, [user, loading, isAdmin, isModerator, navigate]);
+  }, [user, hasAccess, authLoading, navigate]);
 
   const fetchDashboardData = async () => {
-    setLoadingData(true);
+    console.log('Fetching dashboard data...');
+    setDataLoading(true);
+    setError(null);
+    
     try {
       // Fetch movies
       const { data: moviesData, error: moviesError } = await supabase
         .from('movies')
-        .select('id, title, description, genre, status, created_at, poster_url')
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (moviesError) throw moviesError;
+      if (moviesError) {
+        console.error('Movies error:', moviesError);
+        throw moviesError;
+      }
+      
+      console.log('Movies fetched:', moviesData?.length);
       setMovies(moviesData || []);
 
       // Fetch analytics
@@ -99,10 +134,15 @@ export default function AdminDashboard() {
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (analyticsError) throw analyticsError;
-      setAnalytics(analyticsData || []);
+      if (analyticsError) {
+        console.error('Analytics error:', analyticsError);
+        // Don't throw for analytics, just log
+        setAnalytics([]);
+      } else {
+        setAnalytics(analyticsData || []);
+      }
 
-      // Fetch content approvals (simplified without join for now)
+      // Fetch content approvals
       const { data: approvalsData, error: approvalsError } = await supabase
         .from('content_approvals')
         .select('*')
@@ -112,7 +152,7 @@ export default function AdminDashboard() {
         console.error('Approvals error:', approvalsError);
         setApprovals([]);
       } else {
-        // Transform the data to include movie titles
+        // Get movie details for approvals
         const approvalsWithMovies = await Promise.all(
           (approvalsData || []).map(async (approval) => {
             const { data: movieData } = await supabase
@@ -130,10 +170,13 @@ export default function AdminDashboard() {
         setApprovals(approvalsWithMovies);
       }
 
+      console.log('Dashboard data loaded successfully');
     } catch (error: any) {
+      console.error('Dashboard fetch error:', error);
+      setError(error.message);
       toast.error("Failed to load dashboard data: " + error.message);
     } finally {
-      setLoadingData(false);
+      setDataLoading(false);
     }
   };
 
@@ -160,7 +203,7 @@ export default function AdminDashboard() {
         })
         .eq('movie_id', movieId);
 
-      if (approvalError) throw approvalError;
+      if (approvalError) console.error('Approval update error:', approvalError);
 
       toast.success(`Movie ${status} successfully`);
       fetchDashboardData();
@@ -201,15 +244,49 @@ export default function AdminDashboard() {
     return { totalViews, totalDownloads, totalStreams, totalSearches };
   };
 
-  if (loading || loadingData) {
+  // Show loading while auth is loading
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading admin dashboard...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading admin dashboard...</p>
         </div>
       </div>
     );
+  }
+
+  // Show loading while data is loading
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if there was a problem
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <X className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Error Loading Dashboard</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={fetchDashboardData}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if no access (navigation should have happened)
+  if (!hasAccess) {
+    return null;
   }
 
   const stats = getAnalyticsStats();
@@ -292,79 +369,85 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {movies.map((movie) => (
-                    <div key={movie.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        {movie.poster_url && (
-                          <img 
-                            src={movie.poster_url} 
-                            alt={movie.title}
-                            className="w-16 h-24 object-cover rounded"
-                          />
-                        )}
-                        <div>
-                          <h3 className="font-semibold">{movie.title}</h3>
-                          <p className="text-sm text-muted-foreground">{movie.genre}</p>
-                          <Badge variant={
-                            movie.status === 'approved' ? 'default' :
-                            movie.status === 'rejected' ? 'destructive' : 
-                            'secondary'
-                          }>
-                            {movie.status}
-                          </Badge>
+                  {movies.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No movies found
+                    </p>
+                  ) : (
+                    movies.map((movie) => (
+                      <div key={movie.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          {movie.poster_url && (
+                            <img 
+                              src={movie.poster_url} 
+                              alt={movie.title}
+                              className="w-16 h-24 object-cover rounded"
+                            />
+                          )}
+                          <div>
+                            <h3 className="font-semibold">{movie.title}</h3>
+                            <p className="text-sm text-muted-foreground">{movie.genre}</p>
+                            <Badge variant={
+                              movie.status === 'approved' ? 'default' :
+                              movie.status === 'rejected' ? 'destructive' : 
+                              'secondary'
+                            }>
+                              {movie.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <MovieEditDialog movie={movie} onSuccess={fetchDashboardData} />
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive">
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Movie</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{movie.title}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteMovie(movie.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Movie
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+
+                          {movie.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => updateMovieStatus(movie.id, 'approved')}
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateMovieStatus(movie.id, 'rejected')}
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <MovieEditDialog movie={movie} onSuccess={fetchDashboardData} />
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive">
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Movie</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{movie.title}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => deleteMovie(movie.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete Movie
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-
-                        {movie.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => updateMovieStatus(movie.id, 'approved')}
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateMovieStatus(movie.id, 'rejected')}
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -467,6 +550,11 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                     ))}
+                    {analytics.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No analytics data available
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
