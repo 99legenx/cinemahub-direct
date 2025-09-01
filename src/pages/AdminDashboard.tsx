@@ -89,7 +89,7 @@ export default function AdminDashboard() {
     // Wait for auth to load completely
     if (authLoading) return;
 
-    // Check access and redirect if necessary
+    // Check if user exists
     if (!user) {
       console.log('No user, redirecting to auth');
       navigate("/auth");
@@ -97,18 +97,30 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!hasAccess) {
-      console.log('No admin access, redirecting to home');
-      navigate("/");
-      toast.error("Access denied. Admin privileges required.");
-      return;
-    }
+    // Only check access after a brief delay to ensure roles are loaded
+    // This prevents race condition where roles haven't loaded yet
+    const checkAccess = () => {
+      const currentUserRoles = user ? (user as any).app_metadata?.roles || [] : [];
+      const currentHasAccess = user && (currentUserRoles.includes('admin') || currentUserRoles.includes('moderator') || isAdmin() || isModerator());
+      
+      console.log('Access check - User:', user?.email, 'currentHasAccess:', currentHasAccess, 'isAdmin:', isAdmin(), 'isModerator:', isModerator());
+      
+      if (!currentHasAccess) {
+        console.log('No admin access, redirecting to home');
+        navigate("/");
+        toast.error("Access denied. Admin privileges required.");
+        return;
+      }
 
-    // If we have access, fetch data
-    if (hasAccess) {
+      // If we have access, fetch data
       fetchDashboardData();
-    }
-  }, [user, hasAccess, authLoading, navigate]);
+    };
+
+    // Add a small delay to ensure roles are loaded
+    const timeoutId = setTimeout(checkAccess, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [user, authLoading, navigate, isAdmin, isModerator]);
 
   const fetchDashboardData = async () => {
     console.log('Fetching dashboard data...');
