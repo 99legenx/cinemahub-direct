@@ -76,18 +76,23 @@ export default function AdminDashboard() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData[]>([]);
   const [approvals, setApprovals] = useState<ContentApproval[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accessChecked, setAccessChecked] = useState(false);
 
-  // Simpler access check - check roles directly
-  const userRoles = user ? (user as any).app_metadata?.roles || [] : [];
-  const hasAccess = user && (userRoles.includes('admin') || userRoles.includes('moderator') || isAdmin() || isModerator());
+  // Stable access check - avoid recalculating on every render
+  const hasAccess = user && (isAdmin() || isModerator());
 
-  console.log('AdminDashboard - User:', user?.email, 'hasAccess:', hasAccess, 'authLoading:', authLoading);
+  console.log('AdminDashboard - User:', user?.email, 'hasAccess:', hasAccess, 'authLoading:', authLoading, 'accessChecked:', accessChecked);
 
   useEffect(() => {
     // Wait for auth to load completely
     if (authLoading) return;
+
+    // Prevent multiple checks
+    if (accessChecked) return;
+
+    console.log('Running access check...');
 
     // Check if user exists
     if (!user) {
@@ -97,30 +102,18 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Only check access after a brief delay to ensure roles are loaded
-    // This prevents race condition where roles haven't loaded yet
-    const checkAccess = () => {
-      const currentUserRoles = user ? (user as any).app_metadata?.roles || [] : [];
-      const currentHasAccess = user && (currentUserRoles.includes('admin') || currentUserRoles.includes('moderator') || isAdmin() || isModerator());
-      
-      console.log('Access check - User:', user?.email, 'currentHasAccess:', currentHasAccess, 'isAdmin:', isAdmin(), 'isModerator:', isModerator());
-      
-      if (!currentHasAccess) {
-        console.log('No admin access, redirecting to home');
-        navigate("/");
-        toast.error("Access denied. Admin privileges required.");
-        return;
-      }
+    // Check access - use the stable hasAccess variable
+    if (!hasAccess) {
+      console.log('No admin access, redirecting to home');
+      navigate("/");
+      toast.error("Access denied. Admin privileges required.");
+      return;
+    }
 
-      // If we have access, fetch data
-      fetchDashboardData();
-    };
-
-    // Add a small delay to ensure roles are loaded
-    const timeoutId = setTimeout(checkAccess, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [user, authLoading, navigate, isAdmin, isModerator]);
+    // Mark access as checked and fetch data
+    setAccessChecked(true);
+    fetchDashboardData();
+  }, [user, authLoading, hasAccess, accessChecked, navigate]);
 
   const fetchDashboardData = async () => {
     console.log('Fetching dashboard data...');
