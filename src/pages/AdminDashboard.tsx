@@ -86,6 +86,8 @@ export default function AdminDashboard() {
   console.log('AdminDashboard - User:', user?.email, 'hasAccess:', hasAccess, 'authLoading:', authLoading, 'accessChecked:', accessChecked);
 
   useEffect(() => {
+    console.log('useEffect triggered - authLoading:', authLoading, 'accessChecked:', accessChecked, 'user:', user?.email);
+    
     // Wait for auth to load completely
     if (authLoading) return;
 
@@ -97,23 +99,33 @@ export default function AdminDashboard() {
     // Check if user exists
     if (!user) {
       console.log('No user, redirecting to auth');
+      setAccessChecked(true);
       navigate("/auth");
       toast.error("Please sign in to access the admin dashboard.");
       return;
     }
 
-    // Check access - use the stable hasAccess variable
-    if (!hasAccess) {
-      console.log('No admin access, redirecting to home');
-      navigate("/");
-      toast.error("Access denied. Admin privileges required.");
-      return;
-    }
+    // Wait a bit longer for roles to load, then check access
+    const timer = setTimeout(() => {
+      const currentHasAccess = isAdmin() || isModerator();
+      console.log('Final access check - isAdmin:', isAdmin(), 'isModerator:', isModerator(), 'hasAccess:', currentHasAccess);
+      
+      if (!currentHasAccess) {
+        console.log('No admin access, redirecting to home');
+        setAccessChecked(true);
+        navigate("/");
+        toast.error("Access denied. Admin privileges required.");
+        return;
+      }
 
-    // Mark access as checked and fetch data
-    setAccessChecked(true);
-    fetchDashboardData();
-  }, [user, authLoading, hasAccess, accessChecked, navigate]);
+      // Mark access as checked and fetch data
+      console.log('Access granted, fetching dashboard data');
+      setAccessChecked(true);
+      fetchDashboardData();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [user, authLoading, accessChecked, navigate, isAdmin, isModerator]);
 
   const fetchDashboardData = async () => {
     console.log('Fetching dashboard data...');
