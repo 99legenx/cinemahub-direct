@@ -242,6 +242,7 @@ const MovieDetails = () => {
                           variant="outline"
                           size="lg"
                           className="bg-background/80 backdrop-blur"
+                          onClick={handleWatchMovie}
                         >
                           <Play className="w-6 h-6 mr-2" />
                           Play Trailer

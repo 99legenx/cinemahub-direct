@@ -23,6 +23,23 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Check if this is a YouTube URL
+  const isYouTubeUrl = (url: string) => {
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  };
+
+  // Convert YouTube URL to embed format
+  const getYouTubeEmbedUrl = (url: string) => {
+    const videoId = url.includes('youtu.be') 
+      ? url.split('youtu.be/')[1].split('?')[0]
+      : url.split('v=')[1]?.split('&')[0];
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1` : url;
+  };
+
+  // Determine the video source
+  const videoSource = movie.video_url || movie.trailer_url;
+  const isYouTube = videoSource && isYouTubeUrl(videoSource);
+
   // Auto-hide controls
   useEffect(() => {
     const resetControlsTimer = () => {
@@ -118,165 +135,193 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
       <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-background border-border">
         <div className="relative w-full h-full bg-cinema-darker rounded-lg overflow-hidden">
           {/* Video Element */}
-          <video
-            ref={videoRef}
-            className="w-full h-full object-contain"
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            poster={movie.poster_url}
-            src={movie.video_url}
-            onMouseMove={() => setShowControls(true)}
-          >
-            Your browser does not support the video tag.
-          </video>
+          {isYouTube ? (
+            <iframe
+              className="w-full h-full"
+              src={getYouTubeEmbedUrl(videoSource)}
+              title={movie.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-contain"
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              poster={movie.poster_url}
+              src={videoSource}
+              onMouseMove={() => setShowControls(true)}
+              controls={!videoSource} // Show native controls if no video source
+            >
+              Your browser does not support the video tag.
+            </video>
+          )}
 
-          {/* Video Controls Overlay */}
-          <div
-            className={`absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40 transition-opacity duration-300 ${
-              showControls ? 'opacity-100' : 'opacity-0'
-            }`}
-            onMouseMove={() => setShowControls(true)}
-          >
-            {/* Top Controls */}
-            <div className="absolute top-0 left-0 right-0 p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold text-white">{movie.title}</h3>
-                <p className="text-sm text-gray-300">{movie.genre} • {movie.release_year}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Select value={quality} onValueChange={setQuality}>
-                  <SelectTrigger className="w-20 h-8 bg-background/50 border-border/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="720p">720p</SelectItem>
-                    <SelectItem value="1080p">1080p</SelectItem>
-                    <SelectItem value="4k">4K</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={subtitles} onValueChange={setSubtitles}>
-                  <SelectTrigger className="w-24 h-8 bg-background/50 border-border/50">
-                    <SelectValue placeholder="CC" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="off">Off</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="text-white hover:bg-background/20"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Center Play Button */}
-            {!isPlaying && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={togglePlay}
-                  className="w-20 h-20 rounded-full bg-background/20 hover:bg-background/30 text-white"
-                >
-                  <Play className="w-10 h-10" />
-                </Button>
-              </div>
-            )}
-
-            {/* Bottom Controls */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 space-y-4">
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <Slider
-                  value={[currentTime]}
-                  max={duration}
-                  step={1}
-                  onValueChange={handleSeek}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-300">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
+          {/* Video Controls Overlay - Hide for YouTube */}
+          {!isYouTube && (
+            <div
+              className={`absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40 transition-opacity duration-300 ${
+                showControls ? 'opacity-100' : 'opacity-0'
+              }`}
+              onMouseMove={() => setShowControls(true)}
+            >
+              {/* Top Controls */}
+              <div className="absolute top-0 left-0 right-0 p-6 flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold text-white">{movie.title}</h3>
+                  <p className="text-sm text-gray-300">{movie.genre} • {movie.release_year}</p>
                 </div>
-              </div>
-
-              {/* Control Buttons */}
-              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
+                  <Select value={quality} onValueChange={setQuality}>
+                    <SelectTrigger className="w-20 h-8 bg-background/50 border-border/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="720p">720p</SelectItem>
+                      <SelectItem value="1080p">1080p</SelectItem>
+                      <SelectItem value="4k">4K</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={subtitles} onValueChange={setSubtitles}>
+                    <SelectTrigger className="w-24 h-8 bg-background/50 border-border/50">
+                      <SelectValue placeholder="CC" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="off">Off</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => skip(-10)}
+                    onClick={onClose}
                     className="text-white hover:bg-background/20"
                   >
-                    <SkipBack className="w-5 h-5" />
+                    <X className="w-5 h-5" />
                   </Button>
+                </div>
+              </div>
+
+              {/* Center Play Button */}
+              {!isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-center">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={togglePlay}
-                    className="text-white hover:bg-background/20"
+                    className="w-20 h-20 rounded-full bg-background/20 hover:bg-background/30 text-white"
                   >
-                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => skip(10)}
-                    className="text-white hover:bg-background/20"
-                  >
-                    <SkipForward className="w-5 h-5" />
+                    <Play className="w-10 h-10" />
                   </Button>
                 </div>
+              )}
 
-                <div className="flex items-center space-x-4">
-                  {/* Volume Control */}
+              {/* Bottom Controls */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 space-y-4">
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <Slider
+                    value={[currentTime]}
+                    max={duration}
+                    step={1}
+                    onValueChange={handleSeek}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-300">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
+                </div>
+
+                {/* Control Buttons */}
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={toggleMute}
+                      onClick={() => skip(-10)}
                       className="text-white hover:bg-background/20"
                     >
-                      {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      <SkipBack className="w-5 h-5" />
                     </Button>
-                    <div className="w-20">
-                      <Slider
-                        value={[isMuted ? 0 : volume]}
-                        max={1}
-                        step={0.1}
-                        onValueChange={handleVolumeChange}
-                      />
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={togglePlay}
+                      className="text-white hover:bg-background/20"
+                    >
+                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => skip(10)}
+                      className="text-white hover:bg-background/20"
+                    >
+                      <SkipForward className="w-5 h-5" />
+                    </Button>
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-background/20"
-                  >
-                    <Settings className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-background/20"
-                  >
-                    <Maximize className="w-5 h-5" />
-                  </Button>
+                  <div className="flex items-center space-x-4">
+                    {/* Volume Control */}
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleMute}
+                        className="text-white hover:bg-background/20"
+                      >
+                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      </Button>
+                      <div className="w-20">
+                        <Slider
+                          value={[isMuted ? 0 : volume]}
+                          max={1}
+                          step={0.1}
+                          onValueChange={handleVolumeChange}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-background/20"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-background/20"
+                    >
+                      <Maximize className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Close button for YouTube videos */}
+          {isYouTube && (
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="text-white hover:bg-background/20 bg-background/50"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
