@@ -47,19 +47,25 @@ All colors MUST be HSL.
     --cinema-light: 0 0% 98%;
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(222 84% 1%) 0%, hsl(222 84% 5%) 50%, hsl(222 84% 3%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(222 84% 4%) 0%, hsl(217 32% 8%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 100% 62%) 0%, hsl(38 100% 55%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(15 85% 50%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(222 84% 1%) 0%, hsl(222 84% 5%) 30%, hsl(217 32% 8%) 70%, hsl(222 84% 3%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 84% 4%) 0%, hsl(217 32% 8%) 50%, hsl(222 84% 6%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(45 100% 62%) 0%, hsl(38 100% 55%) 50%, hsl(33 100% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(15 85% 50%) 50%, hsl(30 85% 45%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(45 100% 62%) 0%, hsl(0 85% 55%) 100%);
+    --gradient-surface: linear-gradient(145deg, hsl(222 84% 2%) 0%, hsl(217 32% 6%) 100%);
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(45 100% 62% / 0.3);
+    --shadow-glow: 0 0 40px hsl(45 100% 62% / 0.4);
+    --shadow-glow-red: 0 0 30px hsl(0 85% 55% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(222 84% 1% / 0.8);
     --shadow-intense: 0 25px 50px -12px hsl(222 84% 1% / 0.9);
+    --shadow-button: 0 4px 15px hsl(45 100% 62% / 0.4);
+    --shadow-surface: 0 8px 25px hsl(222 84% 1% / 0.6);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-glow: all 0.3s ease-in-out;
 
     --sidebar-background: 0 0% 98%;
 

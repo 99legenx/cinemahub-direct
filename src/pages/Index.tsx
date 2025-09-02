@@ -21,13 +21,13 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-hero">
       <Header />
       
       <main>
         <HeroSection featuredMovies={featuredMovies} />
         
-        <div className="space-y-8">
+        <div className="space-y-12 py-8">
           <CategorySection 
             title="Popular Movies" 
             movies={popularMovies} 
@@ -54,20 +54,28 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="mt-16 bg-card border-t border-border">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
+      <footer className="mt-16 bg-gradient-surface border-t border-border/30 backdrop-blur">
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center space-y-6">
+            <h3 className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
               CinemaHub
             </h3>
-            <p className="text-muted-foreground">
-              Your premium movie streaming destination. Watch and download movies in HD quality.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Your premium movie streaming destination. Watch and download movies in HD quality with no subscription required.
             </p>
-            <div className="flex justify-center space-x-8 text-sm text-muted-foreground">
-              <span>No subscription required</span>
-              <span>HD Quality</span>
-              <span>Direct Downloads</span>
-              <span>Latest Releases</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              <div className="bg-gradient-surface/50 rounded-lg p-3 border border-border/20">
+                <span className="text-sm font-medium text-primary">No Subscription</span>
+              </div>
+              <div className="bg-gradient-surface/50 rounded-lg p-3 border border-border/20">
+                <span className="text-sm font-medium text-primary">HD Quality</span>
+              </div>
+              <div className="bg-gradient-surface/50 rounded-lg p-3 border border-border/20">
+                <span className="text-sm font-medium text-primary">Direct Downloads</span>
+              </div>
+              <div className="bg-gradient-surface/50 rounded-lg p-3 border border-border/20">
+                <span className="text-sm font-medium text-primary">Latest Releases</span>
+              </div>
             </div>
           </div>
         </div>
