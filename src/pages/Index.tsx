@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import CategorySection from "@/components/CategorySection";
@@ -7,6 +8,7 @@ import type { Movie } from "@/hooks/useMovies";
 
 const Index = () => {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const navigate = useNavigate();
   
   const { data: featuredMovies = [] } = useFeaturedMovies();
   const { data: popularMovies = [] } = usePopularMovies();
@@ -16,8 +18,7 @@ const Index = () => {
 
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
-    // TODO: Navigate to movie details page
-    console.log("Selected movie:", movie);
+    navigate(`/movie/${movie.id}`);
   };
 
   return (
