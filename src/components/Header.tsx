@@ -23,33 +23,33 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="flex h-12 md:h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-gold rounded-lg flex items-center justify-center">
-              <Play className="w-5 h-5 text-primary-foreground" />
+          <Link to="/" className="flex items-center space-x-1 md:space-x-2">
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-gold rounded-lg flex items-center justify-center">
+              <Play className="w-3 h-3 md:w-5 md:h-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
+            <h1 className="text-lg md:text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
               CinemaHub
             </h1>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-foreground hover:text-cinema-gold transition-colors">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
+            <Link to="/" className="text-sm lg:text-base text-foreground hover:text-cinema-gold transition-colors">
               Home
             </Link>
-            <Link to="/browse" className="text-muted-foreground hover:text-cinema-gold transition-colors">
+            <Link to="/browse" className="text-sm lg:text-base text-muted-foreground hover:text-cinema-gold transition-colors">
               Browse Movies
             </Link>
           </nav>
 
           {/* Search and Mobile Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             {/* Desktop Search Bar */}
             {!showSearch && (
-              <div className="hidden lg:block w-64">
+              <div className="hidden lg:block w-48 xl:w-64">
                 <SearchBar />
               </div>
             )}
@@ -59,14 +59,14 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => setShowSearch(!showSearch)}
-              className="lg:hidden text-muted-foreground hover:text-foreground"
+              className="lg:hidden text-muted-foreground hover:text-foreground h-8 w-8 md:h-10 md:w-10"
             >
-              {showSearch ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              {showSearch ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Search className="w-4 h-4 md:w-5 md:h-5" />}
             </Button>
 
             {/* User Account */}
             {user ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 md:space-x-2">
                 {!loading && (isAdmin() || isModerator()) && (
                   <Button 
                     variant="ghost" 
@@ -75,18 +75,18 @@ const Header = () => {
                       console.log('Admin button clicked, navigating to /admin');
                       navigate('/admin');
                     }}
-                    className="hidden sm:flex text-primary hover:text-primary/80"
+                    className="hidden sm:flex text-primary hover:text-primary/80 text-xs md:text-sm px-2 md:px-3"
                   >
-                    <Shield className="w-4 h-4 mr-2" />
+                    <Shield className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                     Admin
                   </Button>
                 )}
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                      <User className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs md:text-sm px-2 md:px-3">
+                      <User className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline max-w-20 md:max-w-none truncate">
                         {profile?.full_name || user.email?.split('@')[0] || 'Account'}
                       </span>
                     </Button>
@@ -121,9 +121,9 @@ const Header = () => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => navigate('/auth')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs md:text-sm px-2 md:px-3"
               >
-                <User className="w-4 h-4 mr-2" />
+                <User className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">Sign In</span>
               </Button>
             )}
@@ -133,16 +133,16 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-muted-foreground hover:text-foreground"
+              className="md:hidden text-muted-foreground hover:text-foreground h-8 w-8"
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Search Bar */}
         {showSearch && (
-          <div className="lg:hidden px-4 pb-4">
+          <div className="lg:hidden px-2 md:px-4 pb-3 md:pb-4">
             <SearchBar onClose={() => setShowSearch(false)} />
           </div>
         )}
@@ -151,20 +151,20 @@ const Header = () => {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-card border-t border-border">
-          <nav className="container mx-auto px-4 py-4 space-y-4">
-            <Link to="/" className="block text-foreground hover:text-cinema-gold transition-colors">
+          <nav className="container mx-auto px-2 md:px-4 py-3 md:py-4 space-y-3 md:space-y-4">
+            <Link to="/" className="block text-sm text-foreground hover:text-cinema-gold transition-colors">
               Home
             </Link>
-            <Link to="/browse" className="block text-muted-foreground hover:text-cinema-gold transition-colors">
+            <Link to="/browse" className="block text-sm text-muted-foreground hover:text-cinema-gold transition-colors">
               Browse Movies
             </Link>
             {user && !loading && (isAdmin() || isModerator()) && (
-              <Link to="/admin" className="block text-primary hover:text-primary/80 transition-colors">
+              <Link to="/admin" className="block text-sm text-primary hover:text-primary/80 transition-colors">
                 Admin Dashboard
               </Link>
             )}
             {!user && (
-              <Link to="/auth" className="block text-muted-foreground hover:text-cinema-gold transition-colors">
+              <Link to="/auth" className="block text-sm text-muted-foreground hover:text-cinema-gold transition-colors">
                 Sign In
               </Link>
             )}

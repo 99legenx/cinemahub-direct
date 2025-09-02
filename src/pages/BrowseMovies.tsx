@@ -113,12 +113,12 @@ const BrowseMovies = () => {
       <Header />
       
       {/* Header */}
-      <section className="py-8 border-b border-border/50">
-        <div className="container mx-auto px-4">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold">Browse Movies</h1>
-              <p className="text-muted-foreground">
+      <section className="py-4 md:py-8 border-b border-border/50">
+        <div className="container mx-auto px-2 md:px-4">
+          <div className="space-y-3 md:space-y-6">
+            <div className="space-y-1 md:space-y-2">
+              <h1 className="text-xl md:text-3xl font-bold">Browse Movies</h1>
+              <p className="text-sm md:text-base text-muted-foreground">
                 Discover from our collection of {allMovies.length} movies
               </p>
             </div>
@@ -140,29 +140,29 @@ const BrowseMovies = () => {
       </section>
 
       {/* Movies Grid */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-muted-foreground">
+      <section className="py-4 md:py-8">
+        <div className="container mx-auto px-2 md:px-4">
+          <div className="flex items-center justify-between mb-3 md:mb-6">
+            <p className="text-xs md:text-sm text-muted-foreground">
               Showing {filteredMovies.length} of {allMovies.length} movies
             </p>
           </div>
 
           {filteredMovies.length === 0 ? (
-            <div className="text-center py-16 space-y-4">
-              <h3 className="text-xl font-semibold">No movies found</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
+            <div className="text-center py-8 md:py-16 space-y-2 md:space-y-4">
+              <h3 className="text-lg md:text-xl font-semibold">No movies found</h3>
+              <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-4">
                 No movies match your current filters. Try adjusting your search criteria.
               </p>
               <button
                 onClick={handleClearFilters}
-                className="text-accent hover:underline"
+                className="text-accent hover:underline text-sm md:text-base"
               >
                 Clear all filters
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4 lg:gap-6">
               {filteredMovies.map((movie) => (
                 <MovieCard
                   key={movie.id}

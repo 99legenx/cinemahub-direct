@@ -72,11 +72,11 @@ const CategorySection = ({ title, movies, onMovieClick }: CategorySectionProps) 
   }
 
   return (
-    <section className="py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-          <div className="text-sm text-muted-foreground">
+    <section className="py-4 md:py-8">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="flex items-center justify-between mb-3 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-bold text-foreground">{title}</h2>
+          <div className="text-xs md:text-sm text-muted-foreground">
             Swipe to navigate
           </div>
         </div>
@@ -93,11 +93,11 @@ const CategorySection = ({ title, movies, onMovieClick }: CategorySectionProps) 
           onMouseLeave={handleMouseUp}
         >
           <div 
-            className={`flex space-x-4 transition-transform ${isDragging ? 'duration-0' : 'duration-300'} ease-out select-none`}
+            className={`flex space-x-2 md:space-x-4 transition-transform ${isDragging ? 'duration-0' : 'duration-300'} ease-out select-none`}
             style={{ transform: `translateX(-${scrollPosition}px)` }}
           >
             {movies.map((movie) => (
-              <div key={movie.id} className="flex-shrink-0 w-64">
+              <div key={movie.id} className="flex-shrink-0 w-40 md:w-64">
                 <MovieCard 
                   movie={movie} 
                   onClick={() => onMovieClick?.(movie)}

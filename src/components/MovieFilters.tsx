@@ -69,11 +69,11 @@ const MovieFilters = ({ filters, onFiltersChange, onClearFilters, availableGenre
     filters.quality.length > 0;
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex flex-wrap items-center gap-2 md:gap-4">
       {/* Quick Filters */}
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Select value={filters.genre} onValueChange={(value) => updateFilter('genre', value)}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-24 md:w-32 text-xs md:text-sm">
             <SelectValue placeholder="Genre" />
           </SelectTrigger>
           <SelectContent>
@@ -87,7 +87,7 @@ const MovieFilters = ({ filters, onFiltersChange, onClearFilters, availableGenre
         </Select>
 
         <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-24 md:w-32 text-xs md:text-sm">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +100,7 @@ const MovieFilters = ({ filters, onFiltersChange, onClearFilters, availableGenre
         </Select>
 
         <Select value={filters.sortOrder} onValueChange={(value) => updateFilter('sortOrder', value as 'asc' | 'desc')}>
-          <SelectTrigger className="w-24">
+          <SelectTrigger className="w-16 md:w-24 text-xs md:text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -113,11 +113,11 @@ const MovieFilters = ({ filters, onFiltersChange, onClearFilters, availableGenre
       {/* Advanced Filters Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="relative">
-            <SlidersHorizontal className="w-4 h-4 mr-2" />
-            Filters
+          <Button variant="outline" className="relative text-xs md:text-sm px-2 md:px-4">
+            <SlidersHorizontal className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Filters</span>
             {hasActiveFilters && (
-              <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs bg-accent text-accent-foreground">
+              <Badge variant="secondary" className="ml-1 md:ml-2 px-1 py-0 text-xs bg-accent text-accent-foreground">
                 {[
                   filters.genre !== 'all' && 'Genre',
                   filters.releaseYear[0] !== 1900 || filters.releaseYear[1] !== currentYear && 'Year',
@@ -242,10 +242,10 @@ const MovieFilters = ({ filters, onFiltersChange, onClearFilters, availableGenre
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground text-xs md:text-sm px-2 md:px-3"
         >
-          <X className="w-4 h-4 mr-1" />
-          Clear
+          <X className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+          <span className="hidden sm:inline">Clear</span>
         </Button>
       )}
     </div>

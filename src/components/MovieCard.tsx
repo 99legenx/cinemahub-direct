@@ -47,15 +47,15 @@ const MovieCard = ({ movie, variant = "default", onClick }: MovieCardProps) => {
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
         
         {/* Content Overlay */}
-        <div className="absolute inset-0 p-4 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
+        <div className="absolute inset-0 p-2 md:p-4 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+          <div className="space-y-1 md:space-y-2">
+            <div className="flex items-center space-x-1 md:space-x-2">
               <Badge variant="secondary" className="text-xs">
                 {movie.genre}
               </Badge>
               {movie.rating && (
                 <div className="flex items-center space-x-1">
-                  <Star className="w-3 h-3 text-cinema-gold fill-current" />
+                  <Star className="w-2 h-2 md:w-3 md:h-3 text-cinema-gold fill-current" />
                   <span className="text-xs text-cinema-light font-medium">
                     {movie.rating}
                   </span>
@@ -63,42 +63,42 @@ const MovieCard = ({ movie, variant = "default", onClick }: MovieCardProps) => {
               )}
             </div>
             
-            <h3 className="font-semibold text-cinema-light line-clamp-2">
+            <h3 className="font-semibold text-cinema-light line-clamp-2 text-sm md:text-base">
               {movie.title}
             </h3>
             
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <div className="flex items-center space-x-1 md:space-x-2 text-xs text-muted-foreground">
               {movie.release_year && <span>{movie.release_year}</span>}
               {movie.duration && (
                 <div className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-2 h-2 md:w-3 md:h-3" />
                   <span>{movie.duration}min</span>
                 </div>
               )}
             </div>
             
             {movie.director && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground hidden md:block">
                 Dir. {movie.director}
               </p>
             )}
             
             {/* Action Buttons */}
-            <div className="flex space-x-2 pt-2">
+            <div className="flex space-x-1 md:space-x-2 pt-1 md:pt-2">
               <Button 
                 size="sm" 
                 variant="premium"
-                className="flex-1"
+                className="flex-1 text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
               >
-                <Play className="w-3 h-3 mr-1" />
-                Watch
+                <Play className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                <span className="hidden sm:inline">Watch</span>
               </Button>
               <Button 
                 size="sm" 
                 variant="outline"
-                className="border-accent/50 text-accent hover:bg-accent/20 hover:text-accent hover:border-accent"
+                className="border-accent/50 text-accent hover:bg-accent/20 hover:text-accent hover:border-accent h-7 md:h-9 px-2 md:px-3"
               >
-                <Download className="w-3 h-3" />
+                <Download className="w-2 h-2 md:w-3 md:h-3" />
               </Button>
             </div>
           </div>
@@ -107,8 +107,8 @@ const MovieCard = ({ movie, variant = "default", onClick }: MovieCardProps) => {
       
       {/* Rating Badge */}
       {movie.rating && (
-        <div className="absolute top-3 right-3 bg-gradient-gold backdrop-blur rounded-full px-3 py-1.5 flex items-center space-x-1 shadow-button">
-          <Star className="w-3 h-3 text-primary-foreground fill-current" />
+        <div className="absolute top-1 right-1 md:top-3 md:right-3 bg-gradient-gold backdrop-blur rounded-full px-1.5 py-1 md:px-3 md:py-1.5 flex items-center space-x-1 shadow-button">
+          <Star className="w-2 h-2 md:w-3 md:h-3 text-primary-foreground fill-current" />
           <span className="text-xs font-bold text-primary-foreground">{movie.rating}</span>
         </div>
       )}
