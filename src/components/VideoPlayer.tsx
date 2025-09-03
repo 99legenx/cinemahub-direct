@@ -1,9 +1,10 @@
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Settings, SkipBack, SkipForward } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, Maximize, Settings, SkipBack, SkipForward, Minimize, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { useState, useRef, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Movie } from "@/hooks/useMovies";
 
 interface VideoPlayerProps {
@@ -18,10 +19,15 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [quality, setQuality] = useState("1080p");
   const [subtitles, setSubtitles] = useState("off");
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Check if this is a YouTube URL
   const isYouTubeUrl = (url: string) => {
@@ -40,6 +46,50 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
   const videoSource = movie.video_url || movie.trailer_url;
   const isYouTube = videoSource && isYouTubeUrl(videoSource);
 
+  // Keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!videoRef.current) return;
+    
+    switch (e.code) {
+      case 'Space':
+        e.preventDefault();
+        togglePlay();
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        skip(-10);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        skip(10);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        handleVolumeChange([Math.min(1, volume + 0.1)]);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        handleVolumeChange([Math.max(0, volume - 0.1)]);
+        break;
+      case 'KeyM':
+        e.preventDefault();
+        toggleMute();
+        break;
+      case 'KeyF':
+        e.preventDefault();
+        toggleFullscreen();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        if (isFullscreen) {
+          toggleFullscreen();
+        } else {
+          onClose();
+        }
+        break;
+    }
+  }, [volume, isFullscreen]);
+
   // Auto-hide controls
   useEffect(() => {
     const resetControlsTimer = () => {
@@ -48,7 +98,7 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
         clearTimeout(controlsTimeoutRef.current);
       }
       controlsTimeoutRef.current = setTimeout(() => {
-        if (isPlaying) {
+        if (isPlaying && !isFullscreen) {
           setShowControls(false);
         }
       }, 3000);
@@ -60,48 +110,78 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [isPlaying]);
+  }, [isPlaying, isFullscreen]);
 
-  const togglePlay = () => {
+  // Keyboard event listeners
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const togglePlay = useCallback(() => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(() => setError('Failed to play video'));
       }
-      setIsPlaying(!isPlaying);
     }
-  };
+  }, [isPlaying]);
 
-  const handleTimeUpdate = () => {
+  const toggleFullscreen = useCallback(async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await containerRef.current.requestFullscreen();
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  }, []);
+
+  const handleTimeUpdate = useCallback(() => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
     }
-  };
+  }, []);
 
-  const handleLoadedMetadata = () => {
+  const handleLoadedMetadata = useCallback(() => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleSeek = (newTime: number[]) => {
+  const handleSeek = useCallback((newTime: number[]) => {
     if (videoRef.current) {
       videoRef.current.currentTime = newTime[0];
       setCurrentTime(newTime[0]);
     }
-  };
+  }, []);
 
-  const handleVolumeChange = (newVolume: number[]) => {
+  const handleVolumeChange = useCallback((newVolume: number[]) => {
     const volumeValue = newVolume[0];
     setVolume(volumeValue);
     if (videoRef.current) {
       videoRef.current.volume = volumeValue;
     }
     setIsMuted(volumeValue === 0);
-  };
+  }, []);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     if (videoRef.current) {
       if (isMuted) {
         videoRef.current.volume = volume;
@@ -111,13 +191,20 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
         setIsMuted(true);
       }
     }
-  };
+  }, [isMuted, volume]);
 
-  const skip = (seconds: number) => {
+  const skip = useCallback((seconds: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = Math.max(0, Math.min(duration, currentTime + seconds));
     }
-  };
+  }, [currentTime, duration]);
+
+  const changePlaybackRate = useCallback((rate: number) => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = rate;
+      setPlaybackRate(rate);
+    }
+  }, []);
 
   const formatTime = (time: number) => {
     const hours = Math.floor(time / 3600);
@@ -132,8 +219,30 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-background border-border">
-        <div className="relative w-full h-full bg-cinema-darker rounded-lg overflow-hidden">
+      <DialogContent className={`${isFullscreen ? 'max-w-none w-screen h-screen' : 'max-w-7xl w-full h-[90vh]'} p-0 bg-background border-border`}>
+        <div 
+          ref={containerRef}
+          className="relative w-full h-full bg-cinema-darker rounded-lg overflow-hidden"
+        >
+          {/* Loading Overlay */}
+          {isLoading && !isYouTube && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-20">
+              <div className="text-white text-lg">Loading...</div>
+            </div>
+          )}
+
+          {/* Error Overlay */}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-20">
+              <div className="text-center space-y-4">
+                <p className="text-red-400 text-lg">{error}</p>
+                <Button onClick={() => setError(null)} variant="outline">
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Video Element */}
           {isYouTube ? (
             <iframe
@@ -147,15 +256,20 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
           ) : (
             <video
               ref={videoRef}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain bg-black"
               onTimeUpdate={handleTimeUpdate}
               onLoadedMetadata={handleLoadedMetadata}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
+              onError={() => setError('Failed to load video')}
+              onWaiting={() => setIsLoading(true)}
+              onCanPlay={() => setIsLoading(false)}
               poster={movie.poster_url}
               src={videoSource}
               onMouseMove={() => setShowControls(true)}
-              controls={!videoSource} // Show native controls if no video source
+              onClick={togglePlay}
+              controls={!videoSource}
+              preload="metadata"
             >
               Your browser does not support the video tag.
             </video>
@@ -176,8 +290,21 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
                   <p className="text-sm text-gray-300">{movie.genre} • {movie.release_year}</p>
                 </div>
                 <div className="flex items-center space-x-2">
+                  <Select value={playbackRate.toString()} onValueChange={(value) => changePlaybackRate(Number(value))}>
+                    <SelectTrigger className="w-16 h-8 bg-background/50 border-border/50 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0.5">0.5x</SelectItem>
+                      <SelectItem value="0.75">0.75x</SelectItem>
+                      <SelectItem value="1">1x</SelectItem>
+                      <SelectItem value="1.25">1.25x</SelectItem>
+                      <SelectItem value="1.5">1.5x</SelectItem>
+                      <SelectItem value="2">2x</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Select value={quality} onValueChange={setQuality}>
-                    <SelectTrigger className="w-20 h-8 bg-background/50 border-border/50">
+                    <SelectTrigger className="w-20 h-8 bg-background/50 border-border/50 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -187,14 +314,14 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
                     </SelectContent>
                   </Select>
                   <Select value={subtitles} onValueChange={setSubtitles}>
-                    <SelectTrigger className="w-24 h-8 bg-background/50 border-border/50">
+                    <SelectTrigger className="w-16 h-8 bg-background/50 border-border/50 text-xs">
                       <SelectValue placeholder="CC" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="off">Off</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="en">EN</SelectItem>
+                      <SelectItem value="es">ES</SelectItem>
+                      <SelectItem value="fr">FR</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -292,16 +419,10 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={toggleFullscreen}
                       className="text-white hover:bg-background/20"
                     >
-                      <Settings className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-white hover:bg-background/20"
-                    >
-                      <Maximize className="w-5 h-5" />
+                      {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
                     </Button>
                   </div>
                 </div>
