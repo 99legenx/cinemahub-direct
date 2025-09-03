@@ -29,22 +29,40 @@ const VideoPlayer = ({ movie, onClose }: VideoPlayerProps) => {
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Check if this is a YouTube URL
+  // Enhanced YouTube URL detection
   const isYouTubeUrl = (url: string) => {
-    return url.includes('youtube.com') || url.includes('youtu.be');
+    if (!url) return false;
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/|m\.youtube\.com\/watch\?v=)/;
+    return youtubeRegex.test(url);
   };
 
-  // Convert YouTube URL to embed format
+  // Enhanced YouTube URL to embed format conversion
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.includes('youtu.be') 
-      ? url.split('youtu.be/')[1].split('?')[0]
-      : url.split('v=')[1]?.split('&')[0];
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1` : url;
+    if (!url) return '';
+    
+    let videoId = '';
+    
+    // Handle different YouTube URL formats
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    } else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0];
+    } else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1].split(/[?&]/)[0];
+    } else if (url.includes('youtube.com/v/')) {
+      videoId = url.split('v/')[1].split(/[?&]/)[0];
+    } else if (url.includes('m.youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0];
+    }
+    
+    return videoId 
+      ? `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0`
+      : url;
   };
 
-  // Determine the video source
+  // Determine the video source and type
   const videoSource = movie.video_url || movie.trailer_url;
-  const isYouTube = videoSource && isYouTubeUrl(videoSource);
+  const isYouTube = videoSource ? isYouTubeUrl(videoSource) : false;
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
