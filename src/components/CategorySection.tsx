@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import MovieCard from "./MovieCard";
 
 interface Movie {
@@ -28,6 +30,16 @@ const CategorySection = ({ title, movies, onMovieClick }: CategorySectionProps) 
   
   const cardWidth = 280; // Approximate width of each card
   const maxScroll = Math.max(0, (movies.length * cardWidth) - (window.innerWidth - 100));
+  
+  const scrollLeft = useCallback(() => {
+    const newPosition = Math.max(0, scrollPosition - cardWidth * 2);
+    setScrollPosition(newPosition);
+  }, [scrollPosition]);
+
+  const scrollRight = useCallback(() => {
+    const newPosition = Math.min(maxScroll, scrollPosition + cardWidth * 2);
+    setScrollPosition(newPosition);
+  }, [scrollPosition, maxScroll]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setIsDragging(true);
@@ -76,7 +88,27 @@ const CategorySection = ({ title, movies, onMovieClick }: CategorySectionProps) 
       <div className="container mx-auto px-2 md:px-4">
         <div className="flex items-center justify-between mb-3 md:mb-6">
           <h2 className="text-lg md:text-2xl font-bold text-foreground">{title}</h2>
-          <div className="text-xs md:text-sm text-muted-foreground">
+          <div className="hidden md:flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={scrollLeft}
+              disabled={scrollPosition === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={scrollRight}
+              disabled={scrollPosition >= maxScroll}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="md:hidden text-xs text-muted-foreground">
             Swipe to navigate
           </div>
         </div>
