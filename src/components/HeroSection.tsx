@@ -67,10 +67,10 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
         )}
         
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-background/70" />
+        <div className="absolute inset-0 bg-black/40" />
         
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
       </div>
 
       {/* Content */}
