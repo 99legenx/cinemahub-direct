@@ -125,6 +125,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_movie_categories_category_id"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_movie_categories_movie_id"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "movie_categories_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false

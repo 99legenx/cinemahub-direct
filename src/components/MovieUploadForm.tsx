@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Loader2 } from "lucide-react";
@@ -13,7 +13,6 @@ import { Upload, Loader2 } from "lucide-react";
 interface MovieFormData {
   title: string;
   description: string;
-  genre: string;
   director: string;
   movie_cast: string;
   release_year: number;
@@ -24,24 +23,27 @@ interface MovieFormData {
   download_url: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface MovieUploadFormProps {
   onSuccess?: () => void;
   existingMovie?: any;
   isEditing?: boolean;
 }
 
-const genres = [
-  "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", 
-  "Mystery", "Romance", "Sci-Fi", "Thriller", "Documentary", "Animation"
-];
-
 export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = false }: MovieUploadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<MovieFormData>({
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
+  const { register, handleSubmit, formState: { errors } } = useForm<MovieFormData>({
     defaultValues: existingMovie ? {
       title: existingMovie.title || "",
       description: existingMovie.description || "",
-      genre: existingMovie.genre || "",
       director: existingMovie.director || "",
       movie_cast: Array.isArray(existingMovie.movie_cast) ? existingMovie.movie_cast.join(", ") : (existingMovie.movie_cast || ""),
       release_year: existingMovie.release_year || new Date().getFullYear(),
@@ -56,9 +58,60 @@ export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = 
     }
   });
 
-  const selectedGenre = watch("genre");
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .order('name');
+      
+      if (error) {
+        toast.error("Failed to load categories");
+        return;
+      }
+      
+      setCategories(data || []);
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Load existing movie categories if editing
+  useEffect(() => {
+    if (isEditing && existingMovie?.id) {
+      const fetchMovieCategories = async () => {
+        const { data, error } = await supabase
+          .from('movie_categories')
+          .select('category_id')
+          .eq('movie_id', existingMovie.id);
+        
+        if (error) {
+          toast.error("Failed to load movie categories");
+          return;
+        }
+        
+        setSelectedCategories(data?.map(mc => mc.category_id) || []);
+      };
+
+      fetchMovieCategories();
+    }
+  }, [isEditing, existingMovie?.id]);
+
+  const handleCategoryChange = (categoryId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories(prev => [...prev, categoryId]);
+    } else {
+      setSelectedCategories(prev => prev.filter(id => id !== categoryId));
+    }
+  };
 
   const onSubmit = async (data: MovieFormData) => {
+    if (selectedCategories.length === 0) {
+      toast.error("Please select at least one genre");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Convert cast string to array
@@ -67,22 +120,51 @@ export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = 
       const movieData = {
         ...data,
         movie_cast: castArray,
-        status: 'pending'
+        status: 'pending',
+        genre: 'Multiple' // Temporary placeholder since we're using the categories system
       };
 
-      let result;
+      let movieResult;
+      let movieId: string;
+
       if (isEditing && existingMovie) {
-        result = await supabase
+        movieResult = await supabase
           .from('movies')
           .update(movieData)
           .eq('id', existingMovie.id);
+        movieId = existingMovie.id;
       } else {
-        result = await supabase
+        movieResult = await supabase
           .from('movies')
-          .insert([movieData]);
+          .insert([movieData])
+          .select('id')
+          .single();
+        
+        if (movieResult.error) throw movieResult.error;
+        movieId = movieResult.data.id;
       }
 
-      if (result.error) throw result.error;
+      if (movieResult.error) throw movieResult.error;
+
+      // If editing, first delete existing movie_categories
+      if (isEditing) {
+        await supabase
+          .from('movie_categories')
+          .delete()
+          .eq('movie_id', movieId);
+      }
+
+      // Insert new movie_categories
+      const movieCategories = selectedCategories.map(categoryId => ({
+        movie_id: movieId,
+        category_id: categoryId
+      }));
+
+      const categoriesResult = await supabase
+        .from('movie_categories')
+        .insert(movieCategories);
+
+      if (categoriesResult.error) throw categoriesResult.error;
 
       toast.success(isEditing ? "Movie updated successfully!" : "Movie uploaded successfully!");
       onSuccess?.();
@@ -118,21 +200,28 @@ export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = 
               </div>
 
               <div>
-                <Label htmlFor="genre">Genre *</Label>
-                <Select value={selectedGenre} onValueChange={(value) => setValue("genre", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a genre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {genres.map((genre) => (
-                      <SelectItem key={genre} value={genre}>
-                        {genre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.genre && (
-                  <p className="text-sm text-destructive mt-1">{errors.genre.message}</p>
+                <Label>Genres *</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                  {categories.map((category) => (
+                    <div key={category.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`category-${category.id}`}
+                        checked={selectedCategories.includes(category.id)}
+                        onCheckedChange={(checked) => 
+                          handleCategoryChange(category.id, checked as boolean)
+                        }
+                      />
+                      <Label 
+                        htmlFor={`category-${category.id}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {category.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                {selectedCategories.length === 0 && (
+                  <p className="text-sm text-destructive mt-1">Please select at least one genre</p>
                 )}
               </div>
 
