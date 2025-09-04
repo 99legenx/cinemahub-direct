@@ -53,24 +53,37 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
   const currentMovie = featuredMovies[currentSlide];
 
   return (
-    <section className="relative h-[50vh] md:h-[70vh] overflow-hidden">
+    <section className="relative h-[50vh] md:h-[80vh] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         {currentMovie.poster_url ? (
-          <img 
-            src={currentMovie.poster_url} 
-            alt={currentMovie.title}
-            className="w-full h-full object-cover"
-          />
+          <div className="w-full h-full relative">
+            <img 
+              src={currentMovie.poster_url} 
+              alt={currentMovie.title}
+              className="w-full h-full object-cover md:object-center md:object-contain lg:object-cover"
+            />
+            {/* Blurred background for desktop when using object-contain */}
+            <div 
+              className="absolute inset-0 -z-10 hidden md:block lg:hidden"
+              style={{
+                backgroundImage: `url(${currentMovie.poster_url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(20px) brightness(0.3)',
+                transform: 'scale(1.1)'
+              }}
+            />
+          </div>
         ) : (
           <div className="w-full h-full bg-gradient-hero" />
         )}
         
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/30 md:bg-black/40" />
         
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20 md:bg-gradient-to-r md:from-black/60 md:via-black/30 md:to-transparent" />
       </div>
 
       {/* Content */}
