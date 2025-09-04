@@ -53,7 +53,7 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
   const currentMovie = featuredMovies[currentSlide];
 
   return (
-    <section className="relative h-[50vh] md:h-[80vh] overflow-hidden">
+    <section className="relative h-[50vh] md:h-[60vh] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         {currentMovie.poster_url ? (
@@ -61,11 +61,11 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
             <img 
               src={currentMovie.poster_url} 
               alt={currentMovie.title}
-              className="w-full h-full object-cover md:object-center md:object-contain lg:object-cover"
+              className="w-full h-full object-cover md:object-contain"
             />
             {/* Blurred background for desktop when using object-contain */}
             <div 
-              className="absolute inset-0 -z-10 hidden md:block lg:hidden"
+              className="absolute inset-0 -z-10 hidden md:block"
               style={{
                 backgroundImage: `url(${currentMovie.poster_url})`,
                 backgroundSize: 'cover',
@@ -88,7 +88,7 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
-        <div className="max-w-2xl space-y-3 md:space-y-6">
+        <div className="max-w-2xl space-y-3 md:space-y-4">
           <div className="space-y-1 md:space-y-2">
             <Badge variant="secondary" className="text-xs md:text-sm">
               {currentMovie.genre}

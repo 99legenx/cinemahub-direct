@@ -92,13 +92,8 @@ const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </DropdownMenuItem>
                     {!loading && (isAdmin() || isModerator()) && (
                       <>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => {
                           console.log('Admin dropdown clicked, navigating to /admin');
                           navigate('/admin');
@@ -106,9 +101,9 @@ const Header = () => {
                           <Shield className="w-4 h-4 mr-2" />
                           Admin Dashboard
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                       </>
                     )}
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
