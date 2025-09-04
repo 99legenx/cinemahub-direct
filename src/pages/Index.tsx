@@ -59,7 +59,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="text-center space-y-6">
             <h3 className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-              CinemaHub
+              legendaryMovies
             </h3>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Your premium movie streaming destination. Watch and download movies in HD quality with no subscription required.

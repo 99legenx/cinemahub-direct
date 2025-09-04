@@ -107,7 +107,7 @@ export default function AuthPage() {
 
       if (data.user) {
         if (data.user.email_confirmed_at) {
-          toast.success("Account created successfully! Welcome to CinemaHub.");
+          toast.success("Account created successfully! Welcome to legendaryMovies.");
           window.location.href = '/';
         } else {
           toast.success("Please check your email to confirm your account.");
@@ -225,7 +225,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-border">
         <CardHeader className="text-center">
-          <h1 className="text-2xl font-bold text-cinema-gold mb-2">CinemaHub</h1>
+          <h1 className="text-2xl font-bold text-cinema-gold mb-2">legendaryMovies</h1>
           <CardDescription>
             Access your personal movie streaming platform
           </CardDescription>

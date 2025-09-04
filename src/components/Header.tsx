@@ -31,7 +31,7 @@ const Header = () => {
               <Play className="w-3 h-3 md:w-5 md:h-5 text-primary-foreground" />
             </div>
             <h1 className="text-lg md:text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-              CinemaHub
+              legendaryMovies
             </h1>
           </Link>
 

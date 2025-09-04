@@ -43,7 +43,7 @@ const HeroSection = ({ featuredMovies }: HeroSectionProps) => {
     return (
       <section className="relative h-[50vh] md:h-[70vh] bg-gradient-hero flex items-center justify-center">
         <div className="text-center px-4">
-          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Welcome to CinemaHub</h2>
+          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Welcome to legendaryMovies</h2>
           <p className="text-base md:text-xl text-muted-foreground">Your premium movie streaming destination</p>
         </div>
       </section>
