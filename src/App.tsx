@@ -23,30 +23,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route 
-            path="/movie/:id" 
-            element={
-              <ProtectedRoute>
-                <MovieDetails />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/search" 
-            element={
-              <ProtectedRoute>
-                <SearchResults />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/browse" 
-            element={
-              <ProtectedRoute>
-                <BrowseMovies />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/movie/:id" element={<MovieDetails />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/browse" element={<BrowseMovies />} />
           <Route 
             path="/admin" 
             element={<AdminDashboard />} 
