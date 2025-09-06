@@ -224,7 +224,7 @@ export default function BulkMovieUpload({ onSuccess }: BulkMovieUploadProps) {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Upload multiple movies at once using JSON format. Download the template above to see the required structure. 
-              Required fields: title, genre. All movies will be auto-approved as admin uploads.
+              Required fields: title, genre. For poster_url, you can use direct image URLs. All movies will be auto-approved as admin uploads.
             </AlertDescription>
           </Alert>
 

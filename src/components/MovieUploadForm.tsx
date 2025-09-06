@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Loader2 } from "lucide-react";
+import PosterUpload from "./PosterUpload";
 
 interface MovieFormData {
   title: string;
@@ -40,7 +41,7 @@ export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = 
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   
-  const { register, handleSubmit, formState: { errors } } = useForm<MovieFormData>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<MovieFormData>({
     defaultValues: existingMovie ? {
       title: existingMovie.title || "",
       description: existingMovie.description || "",
@@ -294,11 +295,17 @@ export default function MovieUploadForm({ onSuccess, existingMovie, isEditing = 
               </div>
 
               <div>
-                <Label htmlFor="poster_url">Poster URL</Label>
-                <Input
-                  id="poster_url"
-                  {...register("poster_url")}
-                  placeholder="https://example.com/poster.jpg"
+                <Label>Movie Poster</Label>
+                <Controller
+                  name="poster_url"
+                  control={control}
+                  render={({ field }) => (
+                    <PosterUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={isSubmitting}
+                    />
+                  )}
                 />
               </div>
 
