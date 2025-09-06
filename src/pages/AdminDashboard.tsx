@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import MovieUploadForm from "@/components/MovieUploadForm";
 import MovieEditDialog from "@/components/MovieEditDialog";
+import BulkMovieUpload from "@/components/BulkMovieUpload";
 
 interface Movie {
   id: string;
@@ -375,7 +376,11 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Upload Movie
+              Upload Movies
+            </TabsTrigger>
+            <TabsTrigger value="bulk-upload" className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Bulk Upload
             </TabsTrigger>
           </TabsList>
 
@@ -583,6 +588,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="upload">
             <MovieUploadForm onSuccess={fetchDashboardData} />
+          </TabsContent>
+
+          <TabsContent value="bulk-upload">
+            <BulkMovieUpload onSuccess={fetchDashboardData} />
           </TabsContent>
         </Tabs>
       </div>
